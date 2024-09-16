@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 require('dotenv').config()
 const cors = require('cors');
@@ -30,6 +30,13 @@ async function run() {
         app.get('/services',async(req,res)=>{
             // const data = req.body 
             const result = await carServicesCollection.find().toArray()
+            res.send(result)
+        })
+        // Get specific data from database 
+        app.get('/services/:id', async(req,res)=>{
+            const id = req.params.id 
+            const query = {_id : new ObjectId(id)}
+            const result = await carServicesCollection.findOne(query)
             res.send(result)
         })
         // Send a ping to confirm a successful connection
