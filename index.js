@@ -42,8 +42,15 @@ async function run() {
         })
         //bookings api 
         app.post('/bookings',async(req,res)=>{
-            const booking = req.body 
+            const booking = req.body
             const result = await bookingCollection.insertOne(req.body)
+            res.send(result)
+        })
+        // Get specific data using email 
+        app.get('/booking/:email',async(req,res)=>{
+            const email = req.params.email 
+            const query = {email : email}
+            const result = await bookingCollection.find(query).toArray()
             res.send(result)
         })
         // Send a ping to confirm a successful connection
