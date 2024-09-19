@@ -46,11 +46,18 @@ async function run() {
             const result = await bookingCollection.insertOne(req.body)
             res.send(result)
         })
-        // Get specific data using email 
+        // Get booking specific data using email 
         app.get('/booking/:email',async(req,res)=>{
             const email = req.params.email 
             const query = {email : email}
             const result = await bookingCollection.find(query).toArray()
+            res.send(result)
+        })
+        // Delete booking data api 
+        app.delete('/booking/:id',async(req,res)=>{
+            const id = req.params.id 
+            const query = {_id: new ObjectId(id)}
+            const result = await bookingCollection.deleteOne(query)
             res.send(result)
         })
         // Send a ping to confirm a successful connection
