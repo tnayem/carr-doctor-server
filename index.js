@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
+var cookieParser = require('cookie-parser')
 var jwt = require('jsonwebtoken');
 require('dotenv').config()
 const cors = require('cors');
@@ -12,6 +13,7 @@ app.use(cors({
     credentials:true
 }))
 app.use(express.json())
+app.use(cookieParser())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ycg9h6w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -34,7 +36,6 @@ async function run() {
         // User related api 
         app.post('/jwt', async(req,res)=>{
             const user = req.body 
-            console.log(user);
             const token = jwt.sign({user},process.env.ACCESS_TOKEN_SECRET,{ expiresIn: '1h' })
             res
             .cookie('token', token,{
@@ -66,9 +67,22 @@ async function run() {
             res.send(result)
         })
         // Get booking specific data using email 
-        app.get('/booking/:email',async(req,res)=>{
-            const email = req.params.email 
-            const query = {email : email}
+        // app.get('/booking/:email',async(req,res)=>{
+        //     const token = req.cookies.token;
+        //     console.log(token);
+        //     const email = req.params.email 
+        //     const query = {email : email}
+        //     const result = await bookingCollection.find(query).toArray()
+        //     res.send(result)
+        // })
+        // Get Booking data with email 
+        app.get('/bookings', async(req,res)=>{
+            const token = req?.cookies?.token;
+            console.log(token);
+            let query = {};
+            if(req.query?.email){
+                query = {email : req.query.email}
+            }
             const result = await bookingCollection.find(query).toArray()
             res.send(result)
         })
