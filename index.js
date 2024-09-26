@@ -9,8 +9,8 @@ const app = express()
 
 // Middleware 
 app.use(cors({
-    origin:['http://localhost:5173'],
-    credentials:true
+    origin: ['http://localhost:5173'],
+    credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
@@ -34,34 +34,35 @@ async function run() {
         const carServicesCollection = client.db('carDoctor').collection('services')
         const bookingCollection = client.db('carDoctor').collection('bookings')
         // User related api 
-        app.post('/jwt', async(req,res)=>{
-            const user = req.body 
-            const token = jwt.sign({user},process.env.ACCESS_TOKEN_SECRET,{ expiresIn: '1h' })
+        app.post('/jwt', async (req, res) => {
+            const user = req.body
+            const token = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '365d' })
             res
-            .cookie('token', token,{
-                httpOnly:true,
-                secure:false,
-                sameSite:'none'
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+
             })
-            .send({success:true})
+                .send({ success: true })
         })
 
         //Service related api
         // Get Data from Database 
-        app.get('/services',async(req,res)=>{
+        app.get('/services', async (req, res) => {
             // const data = req.body 
             const result = await carServicesCollection.find().toArray()
             res.send(result)
         })
         // Get specific data from database 
-        app.get('/services/:id', async(req,res)=>{
-            const id = req.params.id 
-            const query = {_id : new ObjectId(id)}
+        app.get('/services/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
             const result = await carServicesCollection.findOne(query)
             res.send(result)
         })
         //bookings api 
-        app.post('/bookings',async(req,res)=>{
+        app.post('/bookings', async (req, res) => {
             const booking = req.body
             const result = await bookingCollection.insertOne(req.body)
             res.send(result)
@@ -76,36 +77,36 @@ async function run() {
         //     res.send(result)
         // })
         // Get Booking data with email 
-        app.get('/bookings', async(req,res)=>{
+        app.get('/bookings', async (req, res) => {
             const token = req?.cookies?.token;
             console.log(token);
             let query = {};
-            if(req.query?.email){
-                query = {email : req.query.email}
+            if (req.query?.email) {
+                query = { email: req.query.email }
             }
             const result = await bookingCollection.find(query).toArray()
             res.send(result)
         })
         // Delete booking data api 
-        app.delete('/booking/:id',async(req,res)=>{
-            const id = req.params.id 
-            const query = {_id: new ObjectId(id)}
+        app.delete('/booking/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
             const result = await bookingCollection.deleteOne(query)
             res.send(result)
         })
         // Update Booking Data 
-        app.patch('/booking/:id', async(req,res)=>{
-            const id = req.params.id 
-            const filter = {_id : new ObjectId(id)}
+        app.patch('/booking/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
             const updatedBooking = req.body
             console.log(updatedBooking);
             const updateDoc = {
                 $set: {
-                  status:updatedBooking.status,
+                    status: updatedBooking.status,
                 },
-              };
-              const result = await bookingCollection.updateOne(filter, updateDoc);
-              res.send(result)
+            };
+            const result = await bookingCollection.updateOne(filter, updateDoc);
+            res.send(result)
 
         })
         // Send a ping to confirm a successful connection
